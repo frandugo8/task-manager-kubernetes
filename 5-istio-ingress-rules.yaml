@@ -1,0 +1,126 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: ingress-gateway-configuration
+spec:
+  selector:
+    istio: ingressgateway # use Istio default gateway implementation
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"   # Domain name of the external website
+---
+kind: VirtualService
+apiVersion: networking.istio.io/v1alpha3
+metadata:
+  name: virtual-service
+spec:
+  hosts:      # which incoming host are we applying the proxy rules to???
+    - "*"
+  gateways:
+    - ingress-gateway-configuration
+
+  http:
+  # - match:
+  #   - uri:
+  #       prefix: /kiali/
+  #   route:
+  #   - destination:
+  #       host: kiali.istio-system.svc.cluster.local
+  #       port:
+  #         number: 20001
+  - match:
+    - uri:
+        prefix: /blinked/translations
+    route:
+    - destination:
+        host: microservice-translations.app.svc.cluster.local
+        port:
+          number: 8000
+  - match:
+    - uri:
+        prefix: /blinked/user
+    route:
+    - destination:
+        host: microservice-users.app.svc.cluster.local
+        port:
+          number: 8000
+  - match:
+    - uri:
+        prefix: /blinked/communities
+    route:
+    - destination:
+        host: microservice-communities.app.svc.cluster.local
+        port:
+          number: 8000
+  - match:
+    - uri:
+        prefix: /blinked/auth
+    route:
+    - destination:
+        host: microservice-auth.app.svc.cluster.local
+        port:
+          number: 8000
+  - match:
+    - uri:
+        prefix: /blinked/chats
+    route:
+    - destination:
+        host: microservice-chats.app.svc.cluster.local
+        port:
+          number: 8000
+  - match:
+    - uri:
+        prefix: /blinked/sockets
+    route:
+    - destination:
+        host: microservice-sockets.app.svc.cluster.local
+        port:
+          number: 8000
+  - match:
+    - uri:
+        prefix: "/app"
+    rewrite:
+      uri: "/"
+    route:
+    - destination:
+        host: webapp-service.app.svc.cluster.local
+        subset: app
+  - match:
+    - uri:
+        prefix: "/home"
+    rewrite:
+      uri: "/"
+    route:
+    - destination:
+        host: webapp-service.app.svc.cluster.local
+        subset: home
+  - match:
+    - uri:
+        exact: "/"
+    rewrite:
+      uri: "/"
+    route:
+    - destination:
+        host: webapp-service.app.svc.cluster.local 
+        subset: home
+
+---
+kind: DestinationRule
+apiVersion: networking.istio.io/v1alpha3
+metadata:
+  name: destination-rule
+  namespace: app
+spec:
+  host: webapp-service
+  subsets:
+    - labels:
+        version: home
+      name: home
+    - labels:
+        version: app
+      name: app
+

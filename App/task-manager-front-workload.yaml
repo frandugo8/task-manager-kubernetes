@@ -1,0 +1,40 @@
+
+#FRONTEND APP
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-app
+  namespace: app
+spec:
+  selector:
+    matchLabels:
+      app: webapp
+  replicas: 1
+  template: # template for the pods
+    metadata:
+      labels:
+        app: webapp
+        version: app
+    spec:
+      containers:
+      - name: webapp
+        image: frandp8/task-manager:frontend-app
+        imagePullPolicy: Always
+      imagePullSecrets:
+      - name: myregistrykey
+
+---
+#FRONTEND SERVICE
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapp-service
+spec:
+  selector:
+    app: webapp
+  ports:
+    - name: http
+      port: 80
+  type: ClusterIP

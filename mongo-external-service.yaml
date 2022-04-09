@@ -1,0 +1,13 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: external-svc-mongocluster
+spec:
+  hosts:
+  - blinkedproduction-dsq5n.gcp.mongodb.net
+  ports:
+  - name: mongo
+    number: 27017
+    protocol: TCP
+  location: MESH_EXTERNAL
+  resolution: NONE

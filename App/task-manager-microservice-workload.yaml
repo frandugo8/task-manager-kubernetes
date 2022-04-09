@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: microservice-task-manager
+  namespace: app
+spec:
+  selector:
+    matchLabels:
+      app: microservice-task-manager
+  replicas: 1
+  template: # template for the pods
+    metadata:
+      labels:
+        app: microservice-task-manager
+    spec:
+      containers:
+      - name: microservice-task-manager
+        image: frandp8/task-manager:microservice-task-manager
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 8000 
+        env:
+        - name: PRODUCTION_MONGODB_URL
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: PRODUCTION_MONGODB_URL
+      imagePullSecrets:
+      - name: myregistrykey
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: microservice-task-manager
+  namespace: app
+spec:
+  selector:
+    app: microservice-task-manager
+  ports:
+    - name: http
+      port: 8000
+  type: ClusterIP
